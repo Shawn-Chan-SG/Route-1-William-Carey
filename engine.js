@@ -315,16 +315,10 @@
       "<h1>Your Progress</h1>" +
       '<div class="subtitle">Team ' + esc(CFG.name) + "</div>" +
       listHtml +
-      ctaHtml +
-      '<div class="footerlink"><a class="textlink" id="resetLink" href="#">Facilitator: reset this team’s progress</a></div>';
+      ctaHtml;
 
     document.getElementById("backBtn").onclick = function () {
       goTo(Math.min(state.pointer, CFG.sequence.length - 1));
-    };
-
-    document.getElementById("resetLink").onclick = function (e) {
-      e.preventDefault();
-      resetProgress("Reset all progress for Team " + CFG.name + "? This cannot be undone.");
     };
 
     Array.prototype.forEach.call(document.querySelectorAll(".jumpitem"), function (el) {
