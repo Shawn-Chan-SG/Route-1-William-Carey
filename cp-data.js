@@ -36,8 +36,8 @@ window.CP_DATA = {
     boardImg: "images/cp2-board.jpg",
     boardCaption: "Photo: Tembusu Tree heritage plaque.",
     hint: "On the board, find the second paragraph on the panel that starts: “A characteristic plant of freshwater swamp…........” Count words from the very first word of that paragraph. The hidden word is word #20 in that paragraph.",
-    pattern: "_ _ _ _ _ _ _",
-    answer: "founded",
+    pattern: "_ _ _ _ _",
+    answer: "known",
     contributesKeyword: true,
     whatsapp: false
   },
@@ -47,8 +47,10 @@ window.CP_DATA = {
     subtitle: "Orchid Plaza",
     mapImg: "images/cp3-map.jpg",
     mapCaption: "CP3 location marked in red — Orchid Plaza.",
-    directions: "Go to Orchid Plaza, directly opposite the entrance of the National Orchid Garden, where a sculpture stands with two words: word (A) + word (B). A: Calculate 100 ÷ 10(2+3) = ? B: Red Bull gives you ____? Just beside the sculpture is the heritage tree — the board you need is its heritage tree plaque.",
-    pathImgs: [],
+    directions: "Go to Orchid Plaza, where you'll find a sculpture with two words: word (A) + word (B). A: Calculate 100 ÷ 10(2+3) = ? B: Red Bull gives you ____? Opposite the sculpture is the heritage tree — the board you need is its heritage tree plaque.",
+    pathImgs: [
+      { src: "images/cp3-hint.jpg", caption: "Clue: the sculpture to look for at Orchid Plaza." }
+    ],
     board: "West Indies Mahogany heritage tree plaque",
     boardImg: "images/cp3-board.jpg",
     boardCaption: "Photo: West Indies Mahogany heritage tree plaque.",
