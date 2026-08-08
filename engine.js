@@ -1,6 +1,21 @@
 // SBG Route 1 — William Carey Amazing Race — shared app engine
 // Expects window.TEAM_CONFIG = { name: "1A", sequence: ["CP1","CP2",...] }
 // and window.CP_DATA / window.PASSAGE_DATA to already be loaded.
+//
+// Bilingual note: this file renders every piece of app "chrome" (buttons,
+// labels, badges, messages) in the visitor's chosen language via the T()/TT()
+// helpers below, which read window.UI_STRINGS (see i18n.js). When the
+// language is English, T()/TT() always return the exact same literal string
+// this file always shipped with, so the English experience is byte-for-byte
+// unchanged. Checkpoint copy (title/subtitle/directions/hint/board/captions)
+// is translated the same way via CT()/CTcaption(), pulling from each
+// checkpoint's optional cp.zh block in cp-data.js.
+//
+// What is deliberately NEVER translated: cp.answer (the keyword itself),
+// cp.pattern (the blank-letter pattern), and every string in
+// window.PASSAGE_DATA (the William Carey quest passage). Those must stay in
+// English in both language modes so the on-the-ground scavenger hunt and the
+// final passage-completion challenge are unaffected by the language toggle.
 (function () {
   "use strict";
 
@@ -12,6 +27,60 @@
 
   function normalize(s) {
     return (s || "").toString().trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  // ---------- i18n helpers ----------
+  function lang() {
+    return (window.SBG_I18N && window.SBG_I18N.get) ? window.SBG_I18N.get() : "en";
+  }
+
+  function uiZh() {
+    return (window.UI_STRINGS && window.UI_STRINGS.zh) || {};
+  }
+
+  // T(key, en) — returns the Chinese UI string for `key` when Chinese is
+  // active, otherwise returns `en` unchanged (so English output never
+  // depends on this file's translation additions).
+  function T(key, en) {
+    if (lang() === "zh") {
+      var s = uiZh()[key];
+      if (s != null) return s;
+    }
+    return en;
+  }
+
+  // TT(key, en, vars) — same as T(), then replaces {{placeholder}} tokens
+  // with the supplied values in whichever string (en or zh) was selected.
+  function TT(key, en, vars) {
+    var s = T(key, en);
+    if (vars) {
+      Object.keys(vars).forEach(function (k) {
+        s = s.split("{{" + k + "}}").join(vars[k]);
+      });
+    }
+    return s;
+  }
+
+  // CT(cp, field) — translated checkpoint copy, falling back to the English
+  // field when Chinese is inactive or no translation exists for that field.
+  function CT(cp, field) {
+    if (lang() === "zh" && cp.zh && cp.zh[field] != null) return cp.zh[field];
+    return cp[field];
+  }
+
+  // CTcaption — translated caption for the i-th pathImgs entry.
+  function CTcaption(cp, i, originalCaption) {
+    if (lang() === "zh" && cp.zh && cp.zh.pathImgs && cp.zh.pathImgs[i] && cp.zh.pathImgs[i].caption != null) {
+      return cp.zh.pathImgs[i].caption;
+    }
+    return originalCaption;
+  }
+
+  // Strip the "Checkpoint N — " / "第N站 — " prefix for the compact summary list.
+  function cpShortTitle(cp) {
+    return CT(cp, "title")
+      .replace(/^Checkpoint \d+\s*—\s*/, "")
+      .replace(/^第\d+站\s*—\s*/, "");
   }
 
   function freshState() {
@@ -131,8 +200,8 @@
     var backDisabled = idx === 0 ? "disabled" : "";
 
     var badge = "";
-    if (st === "solved" || st === "done") badge = '<span class="badge solved">✔ Completed</span>';
-    else if (st === "skipped") badge = '<span class="badge skipped">⏭ Skipped — come back to finish</span>';
+    if (st === "solved" || st === "done") badge = '<span class="badge solved">' + T("completedBadge", "✔ Completed") + '</span>';
+    else if (st === "skipped") badge = '<span class="badge skipped">' + T("skippedBadge", "⏭ Skipped — come back to finish") + '</span>';
 
     function zoomImg(src, caption) {
       if (!src) return "";
@@ -140,21 +209,22 @@
         (caption ? '<div class="photocaption">' + esc(caption) + "</div>" : "");
     }
 
+    var mapCaption = CT(cp, "mapCaption") || T("defaultMapCaption", "Checkpoint location marked in red.");
     var mapHtml = cp.mapImg
-      ? '<div class="section-label">Location Map</div>' + zoomImg(cp.mapImg, cp.mapCaption || "Checkpoint location marked in red.")
+      ? '<div class="section-label">' + T("locationMap", "Location Map") + '</div>' + zoomImg(cp.mapImg, mapCaption)
       : "";
 
     var pathHtml = "";
     if (cp.pathImgs && cp.pathImgs.length) {
-      pathHtml = '<div class="section-label">Extra clue</div>';
-      cp.pathImgs.forEach(function (p) { pathHtml += zoomImg(p.src, p.caption); });
+      pathHtml = '<div class="section-label">' + T("extraClue", "Extra clue") + '</div>';
+      cp.pathImgs.forEach(function (p, i) { pathHtml += zoomImg(p.src, CTcaption(cp, i, p.caption)); });
     }
 
     var boardHtml = "";
     if (cp.board) {
-      boardHtml = '<div class="section-label">Board / Marker</div><p>' + esc(cp.board) + "</p>" + zoomImg(cp.boardImg, cp.boardCaption);
+      boardHtml = '<div class="section-label">' + T("boardMarker", "Board / Marker") + '</div><p>' + esc(CT(cp, "board")) + "</p>" + zoomImg(cp.boardImg, CT(cp, "boardCaption"));
     } else if (cp.boardImg) {
-      boardHtml = '<div class="section-label">Photo</div>' + zoomImg(cp.boardImg, cp.boardCaption);
+      boardHtml = '<div class="section-label">' + T("photo", "Photo") + '</div>' + zoomImg(cp.boardImg, CT(cp, "boardCaption"));
     }
 
     var patternHtml = cp.pattern
@@ -166,42 +236,46 @@
     if (!cp.contributesKeyword) {
       // task-only checkpoint, no keyword to type in
       bodyInner =
-        '<div class="section-label">Task</div><p>' + esc(cp.hint) + "</p>" +
-        '<button class="btn btn-primary" id="doneBtn">' + (st === "done" ? "Continue" : "We’ve completed this ✔ Continue") + "</button>";
+        '<div class="section-label">' + T("task", "Task") + '</div><p>' + esc(CT(cp, "hint")) + "</p>" +
+        '<button class="btn btn-primary" id="doneBtn">' + (st === "done" ? T("continueBtn", "Continue") : T("completedContinueBtn", "We’ve completed this ✔ Continue")) + "</button>";
     } else if (st === "solved") {
       bodyInner =
-        '<div class="hintbox">✅ Solved! Your keyword: <strong>' + esc((state.keywords[id] || "").toUpperCase()) + "</strong></div>" +
-        '<button class="btn btn-primary" id="nextBtn">Continue</button>';
+        '<div class="hintbox">' + T("solvedPrefix", "✅ Solved! Your keyword: ") + '<strong>' + esc((state.keywords[id] || "").toUpperCase()) + "</strong></div>" +
+        '<button class="btn btn-primary" id="nextBtn">' + T("continueBtn", "Continue") + "</button>";
     } else {
-      var noteIfSkippedBefore = st === "skipped" ? '<div class="badge skipped">You skipped this earlier — solve it now!</div>' : "";
+      var noteIfSkippedBefore = st === "skipped" ? '<div class="badge skipped">' + T("skippedNote", "You skipped this earlier — solve it now!") + '</div>' : "";
       bodyInner =
         noteIfSkippedBefore +
-        '<div class="section-label">Where the hidden word is</div>' +
-        '<div class="hintbox">' + esc(cp.hint) + "</div>" +
+        '<div class="section-label">' + T("hiddenWordWhereLabel", "Where the hidden word is") + '</div>' +
+        '<div class="hintbox">' + esc(CT(cp, "hint")) + "</div>" +
         patternHtml +
-        '<input type="text" id="answerInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the keyword here">' +
+        '<input type="text" id="answerInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="' + esc(T("answerPlaceholder", "Type the keyword here")) + '">' +
         '<div class="msg" id="msgBox"></div>' +
-        '<button class="btn btn-primary" id="submitBtn">Submit answer</button>' +
-        (st === "skipped" ? "" : '<button class="btn-skip" id="skipBtn">Can’t find it? Skip to next station ›</button>');
+        '<button class="btn btn-primary" id="submitBtn">' + T("submitAnswerBtn", "Submit answer") + "</button>" +
+        (st === "skipped" ? "" : '<button class="btn-skip" id="skipBtn">' + T("skipBtn", "Can’t find it? Skip to next station ›") + "</button>");
     }
 
-    var whatsappNote = cp.whatsapp
-      ? '<div class="hintbox">📱 WhatsApp your photo to <strong>' + esc(cp.whatsappNumber || "") + '</strong>' + (cp.contributesKeyword ? " to receive this checkpoint's keyword." : ".") + "</div>"
-      : "";
+    var whatsappNote = "";
+    if (cp.whatsapp) {
+      var waNum = esc(cp.whatsappNumber || "");
+      whatsappNote = cp.contributesKeyword
+        ? '<div class="hintbox">' + TT("whatsappNoteKeyword", "📱 WhatsApp your photo to <strong>{{num}}</strong> to receive this checkpoint's keyword.", { num: waNum }) + "</div>"
+        : '<div class="hintbox">' + TT("whatsappNoteNoKeyword", "📱 WhatsApp your photo to <strong>{{num}}</strong>.", { num: waNum }) + "</div>";
+    }
 
     app.innerHTML =
       '<div class="topbar">' +
-      '<button class="btn-back" id="backBtn" ' + backDisabled + '>‹ Back</button>' +
-      '<button class="steplink" id="summaryLink">My progress</button>' +
+      '<button class="btn-back" id="backBtn" ' + backDisabled + '>' + T("backBtn", "‹ Back") + '</button>' +
+      '<button class="steplink" id="summaryLink">' + T("myProgress", "My progress") + '</button>' +
       "</div>" +
       progressBar(idx) +
-      '<div class="steplabel">Station ' + stepNum + " of " + total + "</div>" +
+      '<div class="steplabel">' + TT("stationOf", "Station {{n}} of {{total}}", { n: stepNum, total: total }) + "</div>" +
       badge +
-      "<h1>" + esc(cp.title) + "</h1>" +
-      (cp.subtitle ? '<div class="subtitle">' + esc(cp.subtitle) + "</div>" : "") +
+      "<h1>" + esc(CT(cp, "title")) + "</h1>" +
+      (cp.subtitle ? '<div class="subtitle">' + esc(CT(cp, "subtitle")) + "</div>" : "") +
       mapHtml +
-      '<div class="section-label">Directions</div>' +
-      "<p>" + esc(cp.directions) + "</p>" +
+      '<div class="section-label">' + T("directionsLabel", "Directions") + '</div>' +
+      "<p>" + esc(CT(cp, "directions")) + "</p>" +
       pathHtml +
       boardHtml +
       whatsappNote +
@@ -239,12 +313,12 @@
           state.keywords[id] = normalize(val) === "" ? cp.answer : val.trim();
           save();
           msgBox.className = "msg ok show";
-          msgBox.textContent = "✅ Correct! Well done.";
+          msgBox.textContent = T("correctMsg", "✅ Correct! Well done.");
           submitBtn.disabled = true;
           setTimeout(function () { advance(idx); }, 800);
         } else {
           msgBox.className = "msg bad show";
-          msgBox.textContent = "Not quite — check the board again and try once more.";
+          msgBox.textContent = T("wrongMsg", "Not quite — check the board again and try once more.");
           input.classList.add("shake");
           setTimeout(function () { input.classList.remove("shake"); }, 350);
         }
@@ -287,13 +361,13 @@
       var st = state.status[id];
       var reachable = i <= state.maxReached;
       var tag = "";
-      if (st === "solved") tag = '<span class="tag done">Solved</span>';
-      else if (st === "done") tag = '<span class="tag done">Done</span>';
-      else if (st === "skipped") tag = '<span class="tag">Skipped</span>';
-      else tag = '<span class="tag">' + (reachable ? "Not visited" : "Locked") + "</span>";
+      if (st === "solved") tag = '<span class="tag done">' + T("tagSolved", "Solved") + '</span>';
+      else if (st === "done") tag = '<span class="tag done">' + T("tagDone", "Done") + '</span>';
+      else if (st === "skipped") tag = '<span class="tag">' + T("tagSkipped", "Skipped") + '</span>';
+      else tag = '<span class="tag">' + (reachable ? T("tagNotVisited", "Not visited") : T("tagLocked", "Locked")) + "</span>";
       listHtml +=
         '<div class="jumpitem' + (reachable ? "" : " locked") + '" data-idx="' + i + '"' + (reachable ? "" : ' data-locked="1"') + '>' +
-        "<span>" + (i + 1) + ". " + esc(cp.title.replace(/^Checkpoint \d+ — /, "")) + "</span>" +
+        "<span>" + (i + 1) + ". " + esc(cpShortTitle(cp)) + "</span>" +
         '<span>' + tag + (reachable ? ' <span class="arrow">›</span>' : "") + "</span>" +
         "</div>";
     });
@@ -301,19 +375,19 @@
 
     var ctaHtml;
     if (allDone) {
-      ctaHtml = '<div class="hintbox">🎉 All checkpoints complete! You can now attempt the Final Challenge.</div>' +
-        '<button class="btn btn-primary" id="finalBtn">Go to Final Challenge ›</button>';
+      ctaHtml = '<div class="hintbox">' + T("allDoneMsg", "🎉 All checkpoints complete! You can now attempt the Final Challenge.") + '</div>' +
+        '<button class="btn btn-primary" id="finalBtn">' + T("goFinalBtn", "Go to Final Challenge ›") + '</button>';
     } else {
-      ctaHtml = '<div class="hintbox">' + done.solved + " of " + done.total + " checkpoints solved. Tap a skipped station below to go back and complete it — the Final Challenge only unlocks once every checkpoint is done.</div>";
+      ctaHtml = '<div class="hintbox">' + TT("progressSummary", "{{solved}} of {{total}} checkpoints solved. Tap a skipped station below to go back and complete it — the Final Challenge only unlocks once every checkpoint is done.", { solved: done.solved, total: done.total }) + "</div>";
     }
 
     app.innerHTML =
       '<div class="topbar">' +
-      '<button class="btn-back" id="backBtn">‹ Back</button>' +
+      '<button class="btn-back" id="backBtn">' + T("backBtn", "‹ Back") + '</button>' +
       "<div></div>" +
       "</div>" +
-      "<h1>Your Progress</h1>" +
-      '<div class="subtitle">Team ' + esc(CFG.name) + "</div>" +
+      "<h1>" + T("yourProgressTitle", "Your Progress") + "</h1>" +
+      '<div class="subtitle">' + TT("teamLabel", "Team {{team}}", { team: esc(CFG.name) }) + "</div>" +
       listHtml +
       ctaHtml;
 
@@ -357,6 +431,10 @@
       return;
     }
 
+    // NOTE: the passage text itself (window.PASSAGE_DATA) is intentionally
+    // rendered exactly as authored, in English, in both language modes — see
+    // the file header note and passage-data.js. Only the surrounding screen
+    // chrome below is translated.
     var html = '<div class="passage">';
     PASSAGE.parts.forEach(function (part) {
       if (typeof part === "string") {
@@ -371,21 +449,21 @@
     html += "</div>";
 
     var bank = collectedWords();
-    var bankHtml = '<div class="wordbank"><div class="section-label">Word bank — use each once</div><div class="chip-row">' +
+    var bankHtml = '<div class="wordbank"><div class="section-label">' + T("wordBankLabel", "Word bank — use each once") + '</div><div class="chip-row">' +
       bank.map(function (w) { return '<span class="chip">' + esc(w.toUpperCase()) + "</span>"; }).join("") +
       "</div></div>";
 
     app.innerHTML =
       '<div class="topbar">' +
-      '<button class="btn-back" id="backBtn">‹ Back</button>' +
+      '<button class="btn-back" id="backBtn">' + T("backBtn", "‹ Back") + '</button>' +
       "<div></div>" +
       "</div>" +
-      "<h1>Final Challenge</h1>" +
-      '<div class="subtitle">Fill in the Quest Passage</div>' +
-      "<p>Use the keywords you collected at each checkpoint to complete the passage below.</p>" +
+      "<h1>" + T("finalChallengeTitle", "Final Challenge") + "</h1>" +
+      '<div class="subtitle">' + T("fillPassageSub", "Fill in the Quest Passage") + '</div>' +
+      "<p>" + T("useKeywordsInstruction", "Use the keywords you collected at each checkpoint to complete the passage below.") + "</p>" +
       html +
       '<div class="msg" id="msgBox"></div>' +
-      '<button class="btn btn-primary" id="checkBtn">Check answers</button>' +
+      '<button class="btn btn-primary" id="checkBtn">' + T("checkAnswersBtn", "Check answers") + '</button>' +
       bankHtml;
 
     document.getElementById("backBtn").onclick = function () {
@@ -415,13 +493,13 @@
       var msgBox = document.getElementById("msgBox");
       if (allCorrect) {
         msgBox.className = "msg ok show";
-        msgBox.textContent = "🎉 All correct! Redirecting…";
+        msgBox.textContent = T("allCorrectMsg", "🎉 All correct! Redirecting…");
         state.screen = "congrats";
         save();
         setTimeout(render, 900);
       } else {
         msgBox.className = "msg bad show";
-        msgBox.textContent = "Some words aren't quite right yet — check the highlighted boxes and the word bank.";
+        msgBox.textContent = T("notQuiteMsg", "Some words aren't quite right yet — check the highlighted boxes and the word bank.");
       }
     };
   }
@@ -446,16 +524,16 @@
   function renderCongrats() {
     app.innerHTML =
       '<div class="bigemoji">🎉🌿🎉</div>' +
-      '<h1 class="center">Congratulations, Team ' + esc(CFG.name) + "!</h1>" +
-      '<p class="center">You’ve completed the Great Commission Quest and solved the full William Carey passage.</p>' +
-      '<div class="hintbox center">Please make your way back to the gathering point now. Well done, team! 🙌</div>' +
-      '<button class="btn btn-secondary" id="resetRaceBtn">↻ Reset & start race again</button>' +
-      '<div class="footerlink"><a class="textlink" href="index.html">Amazing Race home</a></div>';
+      '<h1 class="center">' + TT("congratsTitle", "Congratulations, Team {{team}}!", { team: esc(CFG.name) }) + "</h1>" +
+      '<p class="center">' + T("congratsBody", "You’ve completed the Great Commission Quest and solved the full William Carey passage.") + '</p>' +
+      '<div class="hintbox center">' + T("congratsFooter", "Please make your way back to the gathering point now. Well done, team! 🙌") + '</div>' +
+      '<button class="btn btn-secondary" id="resetRaceBtn">' + T("resetBtn", "↻ Reset & start race again") + '</button>' +
+      '<div class="footerlink"><a class="textlink" href="index.html">' + T("homeLink", "Amazing Race home") + '</a></div>';
     launchConfetti();
 
     var resetBtn = document.getElementById("resetRaceBtn");
     if (resetBtn) resetBtn.onclick = function () {
-      resetProgress("Start the race again for Team " + CFG.name + "? This will clear all checkpoints and the passage so the next group can play.");
+      resetProgress(TT("resetConfirm", "Start the race again for Team {{team}}? This will clear all checkpoints and the passage so the next group can play.", { team: esc(CFG.name) }));
     };
   }
 
@@ -470,6 +548,11 @@
     document.querySelectorAll(".lightbox").forEach(function (lb) {
       lb.addEventListener("click", function () { window.closeLightbox(); });
     });
+    render();
+  });
+
+  // Re-render the active screen whenever the language toggle (i18n.js) fires.
+  document.addEventListener("sbg:langchange", function () {
     render();
   });
 })();

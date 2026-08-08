@@ -4,6 +4,13 @@
 // The Board, Where the Hidden Word Is). Answers are taken from
 // "William Carey Passage.txt" (Checkpoint Keywords Edition), which is the
 // authoritative answer key for this route.
+//
+// Bilingual note: each checkpoint has an optional "zh" block with Simplified
+// Chinese translations of the display copy (title/subtitle/captions/
+// directions/board/hint). The "answer" and "pattern" fields are deliberately
+// NOT translated and have no zh equivalent — the hidden word must still be
+// found in English on the physical board, so the keyword always stays in
+// English regardless of the site language toggle.
 window.CP_DATA = {
   CP1: {
     id: "CP1",
@@ -20,7 +27,16 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _ _ _ _ _",
     answer: "dedicated",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第1站 — 缅甸榕树",
+      subtitle: "天鹅湖凉亭附近",
+      mapCaption: "红色标记为第1站位置——天鹅湖凉亭。",
+      directions: "前往天鹅湖南端的天鹅湖凉亭。凉亭旁矗立着“Swing Me Mama”雕塑。雕塑旁边就是一棵大型古树——缅甸榕树（Ficus kurzii）。你需要找的牌匾，是安装在树底座支架上的古树铭牌。",
+      board: "缅甸榕树古树铭牌",
+      boardCaption: "照片：缅甸榕树古树铭牌。",
+      hint: "在牌匾上，找到标题正下方的那一小行文字，开头是：“This Heritage Tree is ….”。隐藏词是这句话中的第5个单词。"
+    }
   },
   CP2: {
     id: "CP2",
@@ -39,7 +55,19 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _",
     answer: "known",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第2站 — 天鹅湖",
+      subtitle: "“Joy”雕塑 / 登布苏树附近",
+      mapCaption: "红色标记为第2站位置——天鹅湖。",
+      directions: "找出一棵出现在新加坡5元纸币背面的老树。接着走到天鹅湖畔草坡上的“Joy”雕塑。牌匾上写道，这棵古树是为纪念1990年代华语流行歌手林里嫔的丈夫而立。",
+      pathImgs: [
+        { caption: "线索：这棵树是为纪念这位1990年代华语流行歌手的丈夫而立。" }
+      ],
+      board: "登布苏树古树铭牌",
+      boardCaption: "照片：登布苏树古树铭牌。",
+      hint: "在牌匾上，找到面板中开头为：“A characteristic plant of freshwater swamp…........”的第二段文字。从该段第一个单词开始数，隐藏词是第20个单词。"
+    }
   },
   CP3: {
     id: "CP3",
@@ -58,7 +86,19 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _ _ _ _ _ _",
     answer: "instrument",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第3站 — 西印度桃花心木",
+      subtitle: "胡姬广场",
+      mapCaption: "红色标记为第3站位置——胡姬广场。",
+      directions: "前往胡姬广场，你会看到一座刻有两个词语的雕塑：词语 (A) + 词语 (B)。A: Calculate 100 ÷ 10(2+3) = ? B: Red Bull gives you ____? 雕塑对面就是那棵古树——你需要找的牌匾是它的古树铭牌。",
+      pathImgs: [
+        { caption: "线索：在胡姬广场寻找这座雕塑。" }
+      ],
+      board: "西印度桃花心木古树铭牌",
+      boardCaption: "照片：西印度桃花心木古树铭牌。",
+      hint: "在牌匾上，找到描述这种树木材用途的第二段文字，开头是：“It is from this species which the original ‘mahogany’ wood was produced …”。从该段第一个单词开始数，隐藏词是第34个单词。"
+    }
   },
   CP4: {
     id: "CP4",
@@ -75,7 +115,16 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _",
     answer: "years",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第4站 — 卓锦万代兰",
+      subtitle: "阳光花园附近，音乐亭以南",
+      mapCaption: "红色标记为第4站位置——卓锦万代兰。",
+      directions: "找到以我国国花命名的牌匾。它位于阳光花园附近，就在音乐亭的南边。",
+      board: "卓锦万代兰牌匾",
+      boardCaption: "照片：卓锦万代兰牌匾。",
+      hint: "在牌匾上，找到讲述这朵花如何被发现与命名的第一段文字。从该段第一个单词开始数，隐藏词是第53个单词。"
+    }
   },
   CP5: {
     id: "CP5",
@@ -92,7 +141,16 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _",
     answer: "today",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第5站 — 音乐亭",
+      subtitle: "东陵核心区",
+      mapCaption: "红色标记为第5站位置——音乐亭。",
+      directions: "爬上东陵核心区那座历史悠久的凉亭。找到那座标志性的音乐舞台，四周环绕着一圈黄花雨树（Samanea saman）——这里是热门的婚纱拍摄地点。牌匾是安装在凉亭附近的解说牌。",
+      board: "音乐亭解说牌",
+      boardCaption: "照片：音乐亭解说牌。",
+      hint: "在牌匾右下方，找到关于环绕音乐亭的那圈雨树的段落，开头是：“One of the notable landscape …”。从该段第一个单词开始数，隐藏词是第10个单词。"
+    }
   },
   CP6: {
     id: "CP6",
@@ -109,7 +167,16 @@ window.CP_DATA = {
     pattern: "_ _ _ _",
     answer: "life",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第6站 — 无忧花溪步道起点",
+      subtitle: "自然沉浸步道，城市发展绿艺廊附近",
+      mapCaption: "红色标记为第6站位置——无忧花溪步道起点。",
+      directions: "在城市发展绿艺廊附近，找到沿着无忧花溪而设的自然沉浸步道起点。牌匾就是介绍这条步道的起点告示牌。",
+      board: "自然沉浸步道告示牌",
+      boardCaption: "照片：自然沉浸步道告示牌。",
+      hint: "在牌匾左栏，找到邀请你跟随步道前行的第二段文字，开头是：“As you follow this trail, slow down …”。从该段第一个单词开始数，隐藏词是第11个单词。"
+    }
   },
   CP7: {
     id: "CP7",
@@ -126,7 +193,16 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _ _ _",
     answer: "carried",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第7站 — 霍尔特姆大厅",
+      subtitle: "新加坡植物园文物馆",
+      mapCaption: "红色标记为第7站位置——霍尔特姆大厅。",
+      directions: "参观这座保育建筑内的博物馆。1925年至1949年间担任植物园园长的埃里克·霍尔特姆教授，在此研发出一项创新的兰花培育技术——通过无菌瓶培育杂交种子，有效培育出健康的兰花幼苗。这项技术至今仍在使用，也带动了本区域兰花产业的蓬勃发展。牌匾上记载着这座大厅的历史。",
+      board: "霍尔特姆大厅历史牌匾",
+      boardCaption: "照片：霍尔特姆大厅历史牌匾。",
+      hint: "在牌匾上，找到关于在这栋建筑实验室内所发现的兰花培育技术的那一段文字，开头是：“It was in his laboratory …”。从该段第一个单词开始数，隐藏词是第16个单词。"
+    }
   },
   CP8: {
     id: "CP8",
@@ -143,6 +219,15 @@ window.CP_DATA = {
     pattern: "_ _ _ _ _ _ _ _",
     answer: "cultures",
     contributesKeyword: true,
-    whatsapp: false
+    whatsapp: false,
+    zh: {
+      title: "第8站 — 城市发展绿艺廊",
+      subtitle: "“Wishes for Our Future World” 标志牌",
+      mapCaption: "红色标记为第8站位置——城市发展绿艺廊。",
+      directions: "参观新加坡第一座零能耗艺廊，由李显龙总理于2013年开幕。线索：发展商名称由3个字母组成——分别是罗马数字中的100、500和50。寻找名为“Wishes for Our Future World”（意即“憧憬未来世界”）的标志牌。",
+      board: "“Wishes for Our Future World” 标志牌",
+      boardCaption: "照片：“Wishes for Our Future World” 标志牌。",
+      hint: "在牌匾上，找到描述120位南极探险“全球公民”的第一段正文。从该段第一个单词开始数，隐藏词是第16个单词。"
+    }
   }
 };

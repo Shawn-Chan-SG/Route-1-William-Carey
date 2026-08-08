@@ -166,3 +166,27 @@ a.textlink{color:#8a8770;font-size:12.5px;text-decoration:underline;}
 .team-btn .teamsub{display:block;font-size:12px;font-weight:600;color:var(--green);margin-top:2px;letter-spacing:.02em;}
 .team-btn span.arrow{color:var(--gold);font-size:20px;}
 .index-foot{color:#cfe9d8;opacity:.8;font-size:12.5px;margin-top:26px;text-align:center;}
+
+/* Language toggle (EN / 中文) — floating pill, added on every page by
+   i18n.js. Purely additive: does not alter any existing selector above. */
+.lang-toggle{
+  position:fixed;
+  top:max(10px, env(safe-area-inset-top));
+  left:max(10px, env(safe-area-inset-left));
+  z-index:16;
+  background:rgba(255,253,247,.96);
+  color:var(--green-dark);
+  border:1px solid #d8d2bd;
+  border-radius:999px;
+  font-size:12.5px;
+  font-weight:800;
+  letter-spacing:.02em;
+  padding:7px 14px;
+  cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,0,0,.3);
+  -webkit-appearance:none;
+}
+.lang-toggle:active{background:#eafff1;}
+@media (max-width:380px){
+  .lang-toggle{font-size:11.5px;padding:6px 12px;}
+}
